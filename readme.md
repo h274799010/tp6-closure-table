@@ -60,7 +60,11 @@
 ## 使用
 
 `ClosureTable`提供了大量方法操作树结构.
-
+```bash
+$ php think closuretable:make Node
+$ php think migrate:run
+```
+可以生成实体类的xxx_closure 表的迁移数据 自动在数据生成数据表
 ### 影响树结构的方法
 
 ```php
