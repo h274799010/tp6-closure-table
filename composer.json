@@ -1,0 +1,34 @@
+{
+  "name": "hsen/tp6-closure-table",
+  "description": "tp6-closure-table",
+  "type": "library",
+  "require": {
+    "php": ">=7.1.0"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "huanglusen",
+      "email": "274799010@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.1.0",
+    "topthink/framework": "^6.0.0",
+    "topthink/think-orm": "^2.0",
+    "topthink/think-migration": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "hs\\ClosureTable\\": "src/"
+    }
+  },
+  "extra": {
+    "think": {
+      "services": [
+        "hs\\ClosureTable\\ClosureTableService"
+      ]
+    }
+  },
+  "minimum-stability": "dev"
+}
