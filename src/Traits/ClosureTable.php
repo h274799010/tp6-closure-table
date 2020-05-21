@@ -5,7 +5,6 @@ namespace hs\ClosureTable\Traits;
 use hs\ClosureTable\Exceptions\ClosureTableException;
 use think\helper\Arr;
 use think\Model;
-use hs\ClosureTable\Extensions\Collection;
 use hs\ClosureTable\Extensions\Str;
 use hs\ClosureTable\Extensions\CollectionExtension;
 use Throwable;
@@ -219,7 +218,7 @@ trait ClosureTable
      */
     protected function setParentKey($key): void
     {
-        $this->settAttr($this->getParentColumn(),$key);
+        $this->settAttr($this->getParentColumn(), $key);
     }
 
     /**
@@ -246,11 +245,10 @@ trait ClosureTable
      */
     protected function joinRelationBy($column, $withSelf = false)
     {
-        halt($this->exists);
         //判断数据是否存在
-        if (!$this->exists) {
-            throw new ModelNotFoundException();
-        }
+//        if (!$this->exists) {
+//            throw new ModelNotFoundException();
+//        }
 
         $query = null;
         $keyName = $this->qualifyColumn($this->getPk());
@@ -262,12 +260,12 @@ trait ClosureTable
 
         switch ($column) {
             case 'ancestor':
-                $query = $this->join($closureTable, $ancestor, '=', $keyName)
+                $query = $this->join($closureTable, $ancestor . '=' . $keyName)
                     ->where($descendant, '=', $key);
                 break;
 
             case 'descendant':
-                $query = $this->join($closureTable, $descendant, '=', $keyName)
+                $query = $this->join($closureTable, $descendant . '=' . $keyName)
                     ->where($ancestor, '=', $key);
                 break;
         }
@@ -286,9 +284,9 @@ trait ClosureTable
      */
     protected function joinRelationSelf()
     {
-        if (!$this->exists) {
-            throw new ModelNotFoundException();
-        }
+//        if (!$this->exists) {
+//            throw new ModelNotFoundException();
+//        }
 
         $keyName = $this->qualifyColumn($this->getPk());
         $key = $this->getAttr($this->getPk());
@@ -297,7 +295,7 @@ trait ClosureTable
         $descendant = $this->getQualifiedDescendantColumn();
         $distance = $this->getQualifiedDistanceColumn();
         return $this
-            ->join($closureTable, $keyName, '=', $ancestor)
+            ->join($closureTable, $keyName . '=' . $ancestor)
             ->where($ancestor, $key)
             ->where($descendant, $key)
             ->where($distance, 0);
@@ -316,7 +314,7 @@ trait ClosureTable
         $ancestor = $this->getQualifiedAncestorColumn();
         $descendant = $this->getQualifiedDescendantColumn();
         return $this
-            ->leftJoin($closureTable, $keyName, '=', $ancestor)
+            ->leftJoin($closureTable, $keyName . '=' . $ancestor)
             ->whereNull($ancestor)
             ->whereNull($descendant);
     }
@@ -332,7 +330,7 @@ trait ClosureTable
         $ancestor = $this->getQualifiedAncestorColumn();
         $descendant = $this->getQualifiedDescendantColumn();
         return $query
-            ->leftJoin($closureTable, $keyName.'='.$ancestor)
+            ->leftJoin($closureTable, $keyName . '=' . $ancestor)
             ->whereNull($ancestor)
             ->whereNull($descendant);
     }
@@ -388,7 +386,7 @@ trait ClosureTable
      */
     protected function detachSelfRelation($with = null): bool
     {
-        $key = $this->getAttr($this->getPk());
+        $key = $this->getKey();
         $table = $this->getClosureTable();
         $ancestorColumn = $this->getAncestorColumn();
         $descendantColumn = $this->getDescendantColumn();
@@ -655,7 +653,7 @@ trait ClosureTable
         }
 
         $keyName = $this->getPk();
-        $key =  $this->getKey();
+        $key = $this->getKey();
         $ids = $this->getAncestorsAndSelf([$keyName])->pluck($keyName)->toArray();
         if (!(is_array($children) || $children instanceof Collection)) {
             $children = array($children);
@@ -869,7 +867,7 @@ trait ClosureTable
      */
     public function getParents(array $columns = ['*'])
     {
-        return $this->where($this->getPk(),$this->getParentKey())->field($columns)->fetchSql(false)->find();
+        return $this->where($this->getPk(), $this->getParentKey())->field($columns)->fetchSql(false)->find();
     }
 
     /**
@@ -990,10 +988,10 @@ trait ClosureTable
                 ->select()
                 ->toTree($keyName, $parentColumn, $childrenColumn);
         }
-        return $this
+        return $this->newCollection($this
             ->joinRelationBy('descendant', true)
             ->field($columns)
-            ->select()
+            ->select())
             ->toTree($keyName, $parentColumn, $childrenColumn);
     }
 
@@ -1073,8 +1071,13 @@ trait ClosureTable
      */
     public function querySiblingsAndSelf()
     {
-        $parent = $this->getParents();
-        return $parent->queryChildren();
+        if ($this->getParentKey()) {
+            $parent = $this->getParents();
+            return $parent->queryChildren();
+        } else {
+            return self::onlyRoot();
+        }
+
     }
 
     /**
@@ -1142,11 +1145,48 @@ trait ClosureTable
     }
 
     /**
-     * @param array $models
+     * @param  $models
      * @return CollectionExtension
      */
-    public function newCollection(array $models = []): CollectionExtension
+    public function newCollection($models = []): CollectionExtension
     {
         return new CollectionExtension($models);
+    }
+
+    /**
+     * @title  闭包表初始化
+     * @desc   方法描述
+     * @param string $id
+     * @param string $parent
+     * @param string $name
+     * @author HuangSen
+     * DateTime: 2020/5/21 15:27
+     */
+    public static function initClosure($id = 'id', $parent = 'parentid', $name = 'name'): void
+    {
+        $data = (new CollectionExtension(self::select()->toArray()))->toTree($id, $parent);
+        self::_initClosure($data, $id, $children = 'children',$name);
+    }
+
+    /**
+     * @title  私有方法  _initClosure
+     * @desc   方法描述
+     * @param $data
+     * @param string $id
+     * @param string $children
+     * @param string $name
+     * @author HuangSen
+     * DateTime: 2020/5/21 15:28
+     */
+    public static function _initClosure($data, $id = 'id', $children = 'children', $name = 'name'): void
+    {
+        foreach ($data as $v) {
+            self::find($v[$id])->perfectNode();
+            dump('开始：' . $v[$name]);
+            if (!empty($v[$children])) {
+                self::_initClosure($v[$children], $id, $children, $name);
+            }
+            dump('结束：' . $v[$name]);
+        }
     }
 }
