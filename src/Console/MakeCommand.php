@@ -94,9 +94,9 @@ class MakeCommand extends Command
     {
         $this->prepareOptions($input);
         $this->writeMigrations($output);
-        $this->writeModels($output);
+//        $this->writeModels($output);
         // 指令输出
-        $output->writeln('test');
+//        $output->writeln('test');
     }
 
     /**
