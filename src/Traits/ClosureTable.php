@@ -44,7 +44,7 @@ trait ClosureTable
      */
     public static function onBeforeUpdate(Model $model): void
     {
-        echo '更新前！<br/>';
+//        echo '更新前！<br/>';
         if ($model->hasChanges($model->getChangedData(), $model->getParentColumn())) {
             $model->updateClosure();
         }
@@ -59,7 +59,7 @@ trait ClosureTable
      */
     public static function onAfterInsert(Model $model): void
     {
-        echo '新增后！<br/>';
+//        echo '新增后！<br/>';
         $model->insertClosure($model->getParentKey() ?: 0);
     }
 
@@ -72,7 +72,7 @@ trait ClosureTable
      */
     public static function onBeforeDelete(Model $model): void
     {
-        echo '删除前！<br/>';
+//        echo '删除前！<br/>';
         $model->deleteObservers();
     }
 
