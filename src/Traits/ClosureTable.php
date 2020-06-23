@@ -218,7 +218,7 @@ trait ClosureTable
      */
     protected function setParentKey($key): void
     {
-        $this->settAttr($this->getParentColumn(), $key);
+        $this->setAttr($this->getParentColumn(), $key);
     }
 
     /**
