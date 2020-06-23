@@ -405,7 +405,7 @@ trait ClosureTable
 
     protected function deleteObservers(): void
     {
-        if (!$this->exists) {
+        if (!$this->isExists()) {
             throw new ModelNotFoundException();
         }
         $children = $this->getChildren();
@@ -424,7 +424,7 @@ trait ClosureTable
      */
     protected function detachRelationships(): bool
     {
-        if (!$this->exists) {
+        if (!$this->isExists()) {
             throw new ModelNotFoundException();
         }
 
@@ -462,7 +462,7 @@ trait ClosureTable
      */
     protected function attachTreeTo($parentKey = 0): bool
     {
-        if (!$this->exists) {
+        if (!$this->isExists()) {
             throw new ModelNotFoundException();
         }
 
@@ -494,7 +494,7 @@ trait ClosureTable
      */
     protected function deleteRelationships(): bool
     {
-        if (!$this->exists) {
+        if (!$this->isExists()) {
             throw new ModelNotFoundException();
         }
 
